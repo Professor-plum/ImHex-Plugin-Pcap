@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.16)
 set(CMAKE_CXX_STANDARD 20)
 
 # Include ImHex cmake module #
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/ImHex/cmake/modules")
-include("${CMAKE_SOURCE_DIR}/ImHex/cmake/build_helpers.cmake")
+set(IMHEX_BASE_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/ImHex)
+set(CMAKE_MODULE_PATH "${IMHEX_BASE_FOLDER}/cmake/modules")
+include("${IMHEX_BASE_FOLDER}/cmake/build_helpers.cmake")
 
 # Create OS and Architecture defines #
 detectOS()
@@ -20,7 +21,7 @@ add_library(${PROJECT_NAME} SHARED
 # Add additional include directories here #
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 # Add additional libraries here #
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ImHex/plugins/libimhex)
+add_subdirectory(${IMHEX_BASE_FOLDER}/plugins/libimhex)
 target_link_libraries(${PROJECT_NAME} PRIVATE libimhex)
 
 
