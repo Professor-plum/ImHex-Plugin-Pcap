@@ -3,10 +3,12 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/ImHex" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/ImHex/external/curl" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/ImHex/external/fmt" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/ImHex/external/nativefiledialog" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/ImHex/external/xdgpp" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/ImHex/external/yara/yara" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ImHex/lib/external/capstone" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ImHex/lib/external/curl" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ImHex/lib/external/fmt" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ImHex/lib/external/libromfs" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ImHex/lib/external/nativefiledialog" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ImHex/lib/external/xdgpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ImHex/lib/external/yara/yara" vcs="Git" />
   </component>
 </project>

@@ -1,11 +1,12 @@
 #include <hex/plugin.hpp>
 
-#include <hex/views/view.hpp>
+#include <hex/api/content_registry.hpp>
+#include <hex/ui/view.hpp>
 
 class ViewExample : public hex::View {
 public:
     ViewExample() : hex::View("Example") {}
-    ~ViewExample() override {}
+    ~ViewExample() override = default;
 
     void drawContent() override {
         if (ImGui::Begin("Example")) {
@@ -17,7 +18,7 @@ public:
 
 IMHEX_PLUGIN_SETUP("C++ Template Plugin", "Plugin Author", "Plugin Description") {
 
-    ContentRegistry::Views::add<ViewExample>();
+    hex::ContentRegistry::Views::add<ViewExample>();
 
 }
 
