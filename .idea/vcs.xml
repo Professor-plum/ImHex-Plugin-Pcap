@@ -8,6 +8,8 @@
     <mapping directory="$PROJECT_DIR$/ImHex/lib/external/fmt" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/ImHex/lib/external/libromfs" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/ImHex/lib/external/nativefiledialog" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ImHex/lib/external/pattern_language" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ImHex/lib/external/pattern_language/external/fmt" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/ImHex/lib/external/xdgpp" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/ImHex/lib/external/yara/yara" vcs="Git" />
   </component>
