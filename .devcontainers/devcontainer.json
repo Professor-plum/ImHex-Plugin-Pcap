@@ -1,0 +1,30 @@
+{
+	"build": {
+		"dockerfile": "../ImHex/dist/Dockerfile",
+		"context": ".."
+	},
+
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {
+            "version": "latest",
+            "ppa": "false"
+        }
+    },
+
+	"capAdd": ["SYS_PTRACE"],
+	"securityOpt": ["seccomp=unconfined"],
+
+    "customizations": {
+
+        "vscode": {
+
+            "extensions": [
+				"ms-vscode.cpptools",
+				"ms-vscode.cmake-tools"
+			]
+		}
+	},
+	"postCreateCommand": "git submodule update --init --recursive",
+
+	"remoteUser": "vscode"
+}
