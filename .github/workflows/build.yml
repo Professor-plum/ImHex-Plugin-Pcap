@@ -133,6 +133,8 @@ jobs:
         MACOSX_DEPLOYMENT_TARGET="10.10"                                                            \
         cmake                                                                                       \
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE                                                            \
+          -DCREATE_BUNDLE=ON                                                                        \
+          -DCREATE_PACKAGE=ON                                                                       \
           -DCMAKE_C_COMPILER_LAUNCHER=ccache                                                        \
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                                                      \
           -DCMAKE_OBJC_COMPILER_LAUNCHER=ccache                                                     \
@@ -142,6 +144,7 @@ jobs:
           -DIMHEX_COMMIT_HASH_LONG="${GITHUB_SHA}"                                                  \
           -DIMHEX_COMMIT_BRANCH="${GITHUB_REF##*/}"                                                 \
           -DCMAKE_OSX_DEPLOYMENT_TARGET="10.10"                                                     \
+          -DCPACK_PACKAGE_FILE_NAME="imhex-macOS-x86_64"                                            \
           ..
         make -j4
 
