@@ -8,6 +8,5 @@ Building a plugin works similarly to building ImHex. Make sure you have all depe
 
 ## Notice
 
-Plugins can depend on the ImHex version you're using. To find out what commit the plugin was built for, check the commit hash next to the ImHex submodule.
-
-![image](https://user-images.githubusercontent.com/10835354/144566767-31c39e72-2d08-42b1-a38b-dcba44939ac9.png)
+Plugins can depend on the ImHex version you're using. 
+To find out what commit the plugin was built for, check the commit hash next to the ImHex submodule.

@@ -1,4 +1,2 @@
-
-cmake-build-debug/
-
-cmake-build-debug-mingw/
+cmake-build-*/
+build/
