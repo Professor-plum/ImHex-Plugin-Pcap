@@ -1,6 +1,6 @@
 # ImHex Packet Capture Plugin 
 
-This plugin adds a providoer for parsing pcap files. It allows for binary analysis on packet contents and supports automatic stripping of ethernet, IP, TCP, and UDP headers. It also supports Berkly Packet Filters and message reassembly via selecting multiple packets.
+This plugin adds a provider for parsing pcap files. It allows for binary analysis on packet contents and supports automatic stripping of ethernet, IP, TCP, and UDP headers. It also supports Berkly Packet Filters and message reassembly via selecting multiple packets.
 
 ![screenshot](Images/Screenshot.png)
 
