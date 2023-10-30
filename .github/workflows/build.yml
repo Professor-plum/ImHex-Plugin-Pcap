@@ -59,6 +59,7 @@ jobs:
           freetype:p
           dlfcn:p
           libbacktrace:p
+          libpcap:p
 
     # Windows cmake build
     - name: 🛠️ Build
@@ -118,6 +119,7 @@ jobs:
     - name: ⬇️ Install dependencies
       run: |
         brew bundle --no-lock --file ImHex/dist/Brewfile
+        brew install libpcap 
         rm -rf /usr/local/Cellar/capstone
 
     # MacOS cmake build
@@ -184,6 +186,7 @@ jobs:
         run: |
           sudo apt update
           sudo bash ImHex/dist/get_deps_debian.sh
+          sudo apt install libpcap-dev
 
       # Ubuntu cmake build
       - name: 🛠️ Build
@@ -233,6 +236,7 @@ jobs:
       - name: ⬇️ Install ImHex dependencies
         run: |
           ImHex/dist/get_deps_archlinux.sh --noconfirm
+          pacman -Syu libpcap
 
       - name: 📜 Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
