@@ -118,7 +118,7 @@ jobs:
 
     - name: ⬇️ Install dependencies
       run: |
-        brew bundle --no-lock --file ImHex/dist/Brewfile
+        brew bundle --no-lock --file build/_deps/imhex-src/dist/Brewfile
         brew install libpcap 
         rm -rf /usr/local/Cellar/capstone
 
@@ -185,7 +185,7 @@ jobs:
       - name: ⬇️ Install dependencies
         run: |
           sudo apt update
-          sudo bash ImHex/dist/get_deps_debian.sh
+          sudo bash build/_deps/imhex-src/dist/get_deps_debian.sh
           sudo apt install libpcap-dev
 
       # Ubuntu cmake build
@@ -235,7 +235,7 @@ jobs:
 
       - name: ⬇️ Install ImHex dependencies
         run: |
-          ImHex/dist/get_deps_archlinux.sh --noconfirm
+          build/_deps/imhex-src/dist/get_deps_archlinux.sh --noconfirm
           pacman -Syu libpcap
 
       - name: 📜 Setup ccache
