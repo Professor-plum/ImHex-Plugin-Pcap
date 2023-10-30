@@ -273,7 +273,7 @@ jobs:
             nlohmann-json \
             ninja
 
-          pacman -Syu libpcap
+          pacman -S --noconfirm libpcap
 
       - name: 📜 Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2

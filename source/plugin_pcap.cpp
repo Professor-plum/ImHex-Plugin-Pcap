@@ -141,24 +141,24 @@ bool PcapProvider::loadPacketList() {
     }
 
     while ((ret = pcap_next_ex(fp, &header, &packet)) == 1) { 
-        const struct ethernet_hdr* ethernetHeader;
-        const struct ip_hdr* ipHeader;
-        const struct tcp_hdr* tcpHeader;
-        const struct udp_hdr* udpHeader;
+        const struct im_ethernet_hdr* ethernetHeader;
+        const struct im_ip_hdr* ipHeader;
+        const struct im_tcp_hdr* tcpHeader;
+        const struct im_udp_hdr* udpHeader;
         u_int sourcePort, destPort;
         u_int offset;
         u_int data_len = 0;
         pkt_idx++;
         
-        ethernetHeader = (struct ethernet_hdr*)packet;
-        offset = sizeof(struct ethernet_hdr);
+        ethernetHeader = (struct im_ethernet_hdr*)packet;
+        offset = sizeof(struct im_ethernet_hdr);
         if (ntohs(ethernetHeader->ether_type) == ETHERTYPE_IP) {
-            ipHeader = (struct ip_hdr*)(packet + offset);
+            ipHeader = (struct im_ip_hdr*)(packet + offset);
             offset += ipHeader->ip_hl * 4;
             inet_ntop(AF_INET, &(ipHeader->ip_src), sourceIP, INET_ADDRSTRLEN);
             inet_ntop(AF_INET, &(ipHeader->ip_dst), destIP, INET_ADDRSTRLEN);
             if (ipHeader->ip_p == IPPROTO_TCP) {
-                tcpHeader = (struct tcp_hdr*)(packet + offset);
+                tcpHeader = (struct im_tcp_hdr*)(packet + offset);
                 offset += tcpHeader->th_off * 4;
                 sourcePort = ntohs(tcpHeader->th_sport);
                 destPort = ntohs(tcpHeader->th_dport);
@@ -166,8 +166,8 @@ bool PcapProvider::loadPacketList() {
                 snprintf(line, sizeof(line), "#%-4d %15s:%-5d -> %15s:%-5d TCP %d bytes", 
                     pkt_idx, sourceIP, sourcePort, destIP, destPort, data_len);
             } else if (ipHeader->ip_p == IPPROTO_UDP) {
-                udpHeader = (struct udp_hdr*)(packet + offset);
-                offset += sizeof(struct udp_hdr);
+                udpHeader = (struct im_udp_hdr*)(packet + offset);
+                offset += sizeof(struct im_udp_hdr);
                 sourcePort = ntohs(udpHeader->uh_sport);
                 destPort = ntohs(udpHeader->uh_dport);
                 data_len = header->len - offset;
@@ -233,21 +233,21 @@ bool PcapProvider::loadPackets() {
     for( std::map<u_int, u_int>::iterator iter = m_selected_packets.begin(); iter != m_selected_packets.end(); ++iter ) {
         while ((ret = pcap_next_ex(fp, &header, &packet)) == 1) { 
             if (++pkt_idx == iter->second) {
-                const struct ethernet_hdr* ethernetHeader;
-                const struct ip_hdr* ipHeader;
-                const struct tcp_hdr* tcpHeader;
+                const struct im_ethernet_hdr* ethernetHeader;
+                const struct im_ip_hdr* ipHeader;
+                const struct im_tcp_hdr* tcpHeader;
                 //const struct udphdr* udpHeader;
                 u_int offset;
                 u_int data_len;
                 u_int data_pre_len;
                 
-                ethernetHeader = (struct ethernet_hdr*)packet;
-                offset = sizeof(struct ethernet_hdr);
+                ethernetHeader = (struct im_ethernet_hdr*)packet;
+                offset = sizeof(struct im_ethernet_hdr);
                 if (ntohs(ethernetHeader->ether_type) == ETHERTYPE_IP) {
-                    ipHeader = (struct ip_hdr*)(packet + offset);
+                    ipHeader = (struct im_ip_hdr*)(packet + offset);
                     offset += ipHeader->ip_hl * 4;
                     if (ipHeader->ip_p == IPPROTO_TCP) {
-                        tcpHeader = (struct tcp_hdr*)(packet + offset);
+                        tcpHeader = (struct im_tcp_hdr*)(packet + offset);
                         offset += tcpHeader->th_off * 4;
                         data_len = header->len - offset;
                         data_pre_len = this->m_data.size();
@@ -255,7 +255,7 @@ bool PcapProvider::loadPackets() {
                         std::memcpy(&this->m_data[data_pre_len], packet + offset, data_len);
                     } else if (ipHeader->ip_p == IPPROTO_UDP) {
                         //udpHeader = (struct udp_hdr*)(packet + offset);
-                        offset += sizeof(struct udp_hdr);
+                        offset += sizeof(struct im_udp_hdr);
                         data_len = header->len - offset;
                         data_pre_len = this->m_data.size();
                         this->m_data.resize(data_pre_len + data_len);

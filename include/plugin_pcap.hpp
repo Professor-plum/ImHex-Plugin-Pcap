@@ -14,7 +14,7 @@
 #define ETHER_ADDR_LEN	6
 
 /* Ethernet header */
-struct ethernet_hdr {
+struct im_ethernet_hdr {
 	u_char ether_dhost[ETHER_ADDR_LEN]; /* Destination host address */
 	u_char ether_shost[ETHER_ADDR_LEN]; /* Source host address */
 	u_short ether_type; /* IP? ARP? RARP? etc */
@@ -26,7 +26,7 @@ struct ethernet_hdr {
 
 
 /* IP header */
-struct ip_hdr {
+struct im_ip_hdr {
     #if __LITTLE_ENDIAN__ 
         u_char  ip_hl:4,        /* header length */
                 ip_v:4;         /* version */
@@ -47,7 +47,7 @@ struct ip_hdr {
 /* TCP header */
 typedef u_int tcp_seq;
 
-struct tcp_hdr {
+struct im_tcp_hdr {
 	u_short th_sport;	/* source port */
 	u_short th_dport;	/* destination port */
 	tcp_seq th_seq;		/* sequence number */
@@ -66,7 +66,7 @@ struct tcp_hdr {
 
 
 /* UDP header */
-struct udp_hdr {
+struct im_udp_hdr {
 	u_short	uh_sport;		/* source port */
 	u_short	uh_dport;		/* destination port */
 	u_short	uh_ulen;		/* udp length */
