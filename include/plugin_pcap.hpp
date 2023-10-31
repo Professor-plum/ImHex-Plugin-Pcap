@@ -1,7 +1,6 @@
 #if defined(OS_WINDOWS)
     #include <winsock2.h>
     #include <windows.h>
-    #define __LITTLE_ENDIAN__ 1
 #endif
 #include <hex/plugin.hpp>
 #include <hex/providers/provider.hpp>
@@ -10,11 +9,12 @@
 #include <map>
 
 
+
 /* Ethernet addresses are 6 bytes */
 #define ETHER_ADDR_LEN	6
 
 /* Ethernet header */
-struct im_ethernet_hdr {
+struct ethernet_hdr {
 	u_char ether_dhost[ETHER_ADDR_LEN]; /* Destination host address */
 	u_char ether_shost[ETHER_ADDR_LEN]; /* Source host address */
 	u_short ether_type; /* IP? ARP? RARP? etc */
@@ -26,14 +26,14 @@ struct im_ethernet_hdr {
 
 
 /* IP header */
-struct im_ip_hdr {
-    #if __LITTLE_ENDIAN__ 
-        u_char  ip_hl:4,        /* header length */
-                ip_v:4;         /* version */
-    #elif __BIG_ENDIAN__ 
-        u_char  ip_v:4,         /* version */
-                ip_hl:4;        /* header length */
-    #endif
+struct ip_hdr {
+#if IS_BIG_ENDIAN
+    u_char  ip_v:4,         /* version */
+            ip_hl:4;        /* header length */
+#else 
+    u_char  ip_hl:4,        /* header length */
+            ip_v:4;         /* version */
+#endif
     u_char ip_tos;		/* type of service */
 	u_short ip_len;		/* total length */
 	u_short ip_id;		/* identification */
@@ -47,17 +47,17 @@ struct im_ip_hdr {
 /* TCP header */
 typedef u_int tcp_seq;
 
-struct im_tcp_hdr {
+struct tcp_hdr {
 	u_short th_sport;	/* source port */
 	u_short th_dport;	/* destination port */
 	tcp_seq th_seq;		/* sequence number */
 	tcp_seq th_ack;		/* acknowledgement number */
-#  if __LITTLE_ENDIAN__
-    u_char th_x2:4;                /* (unused) */
-    u_char th_off:4;                /* data offset */
-#  elif __BIG_ENDIAN__ 
+#if IS_BIG_ENDIAN 
     u_char th_off:4;                /* data offset */
     u_char th_x2:4;                /* (unused) */
+#else
+    u_char th_x2:4;                /* (unused) */
+    u_char th_off:4;                /* data offset */
 #  endif
 	u_short th_win;		/* window */
 	u_short th_sum;		/* checksum */
@@ -66,7 +66,7 @@ struct im_tcp_hdr {
 
 
 /* UDP header */
-struct im_udp_hdr {
+struct udp_hdr {
 	u_short	uh_sport;		/* source port */
 	u_short	uh_dport;		/* destination port */
 	u_short	uh_ulen;		/* udp length */
