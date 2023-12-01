@@ -132,7 +132,7 @@ jobs:
         OBJC=$(brew --prefix llvm)/bin/clang                                                        \
         OBJCXX=$(brew --prefix llvm)/bin/clang++                                                    \
         PKG_CONFIG_PATH="$(brew --prefix openssl)/lib/pkgconfig":"$(brew --prefix)/lib/pkgconfig"   \
-        MACOSX_DEPLOYMENT_TARGET="10.10"                                                            \
+        MACOSX_DEPLOYMENT_TARGET="12.0"                                                            \
         cmake                                                                                       \
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE                                                            \
           -DCREATE_BUNDLE=ON                                                                        \
@@ -145,7 +145,7 @@ jobs:
           -DIMHEX_COMMIT_HASH_SHORT="${GITHUB_SHA::7}"                                              \
           -DIMHEX_COMMIT_HASH_LONG="${GITHUB_SHA}"                                                  \
           -DIMHEX_COMMIT_BRANCH="${GITHUB_REF##*/}"                                                 \
-          -DCMAKE_OSX_DEPLOYMENT_TARGET="10.10"                                                     \
+          -DCMAKE_OSX_DEPLOYMENT_TARGET="12.0"                                                     \
           -DCPACK_PACKAGE_FILE_NAME="imhex-macOS-x86_64"                                            \
           ..
         make -j4
@@ -155,7 +155,7 @@ jobs:
       with:
         name: macOS Plugin
         path: |
-          build/*.hexplug
+          build/imhex.app/Contents/MacOS/plugins/pcaps.hexplug
 
   # Ubuntu build
   ubuntu:

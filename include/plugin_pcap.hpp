@@ -8,7 +8,7 @@
 #include <pcap.h>
 #include <map>
 
-
+#define PCAP_PAGE_SIZE  1000
 
 /* Ethernet addresses are 6 bytes */
 #define ETHER_ADDR_LEN	6
@@ -114,6 +114,7 @@ protected:
     bool loadPacketList();
     bool loadPackets();   
     
+    int m_page;
     std::string m_bpf;
     std::fs::path m_path;
     std::vector<u8> m_data;

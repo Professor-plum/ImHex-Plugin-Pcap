@@ -20,19 +20,19 @@ std::string PcapProvider::getName() const {
 }
 
 bool PcapProvider::handleFilePicker() {
-    return hex::fs::openFileBrowser(hex::fs::DialogMode::Open, {{ "Packet Capture", "pcap"}}, [this](const auto &path) {
+    return hex::fs::openFileBrowser(hex::fs::DialogMode::Open, {{ "Packet Capture", "pcap"}, { "Packet Capture", "pcapng"}}, [this](const auto &path) {
          this->m_path = path;
     });
 }
 
 bool PcapProvider::open() {
-    
     if (!std::fs::exists(this->m_path)) {
         this->setErrorMessage(hex::format("Error opening {} ({})", this->m_path.string(), ::strerror(ENOENT)));
         return false;
     }
     if (!loadPacketList()) return false;
 
+    m_page = 1;
     m_selected_packets[0] = m_packet_descs.begin()->first;
     return loadPackets();
 }
@@ -54,6 +54,7 @@ void PcapProvider::drawInterface() {
     if (ImGui::InputText("##BPF", bpf_str, IM_ARRAYSIZE(bpf_str), ImGuiInputTextFlags_EnterReturnsTrue)) {
         if (valid_filter) {
             this->m_bpf = bpf_str;
+            hex::log::warn("bpf reopen");
             this->open();
         }
     } 
@@ -65,24 +66,25 @@ void PcapProvider::drawInterface() {
     ImGui::ColorButton("##Valid", valid_filter?ImVec4(0,0.5f,0,1):ImVec4(0.5f,0,0,01), ImGuiColorEditFlags_NoTooltip);
     ImGui::PopItemFlag();
     ImGui::Header("Packets", true);
-
-    if (ImGui::BeginListBox("##Packets", ImVec2(-FLT_MIN, -FLT_MIN))) {
+    if (ImGui::BeginListBox("##Packets", ImVec2(-FLT_MIN, -(ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y)))) {
 
         u_int idx = 0;
         bool updated = false;
         for( std::map<u_int, std::string>::iterator iter = m_packet_descs.begin(); iter != m_packet_descs.end(); ++iter )
         {
             const bool selected = this->m_selected_packets.count(idx);
-            if (ImGui::Selectable(iter->second.c_str(), selected)) {
-                if (ImGui::IsKeyDown(ImGuiMod_Ctrl)) {  //multiselect/deselect
-                    if (selected) m_selected_packets.erase(idx);
-                    else m_selected_packets[idx] = iter->first;
+            if ((idx / PCAP_PAGE_SIZE) == (unsigned int)(m_page - 1)) {
+                if (ImGui::Selectable(iter->second.c_str(), selected)) {
+                    if (ImGui::IsKeyDown(ImGuiMod_Ctrl)) {  //multiselect/deselect
+                        if (selected) m_selected_packets.erase(idx);
+                        else m_selected_packets[idx] = iter->first;
+                    }
+                    else {
+                        m_selected_packets.clear();
+                        m_selected_packets[idx] = iter->first;
+                    }
+                    updated = true;
                 }
-                else {
-                    m_selected_packets.clear();
-                    m_selected_packets[idx] = iter->first;
-                }
-                updated = true;
             }
             idx++;
         }
@@ -91,6 +93,19 @@ void PcapProvider::drawInterface() {
             this->loadPackets();
         }
     }
+    int v_max = 1 + (m_packet_descs.size() / PCAP_PAGE_SIZE);
+    if (ImGui::ArrowButton("page_prevn", ImGuiDir_Left)) {
+        if (m_page>1) m_page--;
+    }
+    ImGui::SameLine();
+    if (ImGui::SliderInt("Page", &m_page, 1, v_max, "%d", ImGuiSliderFlags_AlwaysClamp)) {
+
+    }
+    ImGui::SameLine();
+    if (ImGui::ArrowButton("page_next", ImGuiDir_Right)) {
+        if (m_page < v_max) m_page++;
+    }
+    
 }
 
 bool PcapProvider::isBpfValid(char* bpf) {
@@ -118,7 +133,7 @@ bool PcapProvider::loadPacketList() {
     struct pcap_pkthdr *header;   
     char line[256];
     int ret;
-    
+
     fp = pcap_open_offline(this->m_path.string().c_str(), errbuf);
     if (fp == NULL) {
         this->setErrorMessage(hex::format("Failed to open {} ({})", this->m_path.string(), errbuf));
@@ -208,7 +223,6 @@ bool PcapProvider::loadPackets() {
     struct pcap_pkthdr *header;   
     char errbuf[PCAP_ERRBUF_SIZE];
     int ret = 0;
-
 
     fp = pcap_open_offline(this->m_path.string().c_str(), errbuf);
     if (fp == NULL) {
