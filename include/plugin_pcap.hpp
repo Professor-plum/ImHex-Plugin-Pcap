@@ -87,7 +87,7 @@ public:
 
     void readRaw(u64 offset, void *buffer, size_t size) override;
     void writeRaw(u64 offset, const void *buffer, size_t size) override { hex::unused(offset, buffer, size);}
-    [[nodiscard]] size_t getActualSize() const override {return this->m_data.size();}
+    [[nodiscard]] u64 getActualSize() const override {return this->m_data.size();}
 
     [[nodiscard]] std::string getName() const override;
     [[nodiscard]] std::vector<Description> getDataDescription() const override { return { }; };

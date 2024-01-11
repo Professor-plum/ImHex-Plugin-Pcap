@@ -47,8 +47,8 @@ std::pair<hex::Region, bool> PcapProvider::getRegionValidity(u64 address) const 
 }
 
 void PcapProvider::drawInterface() {
-    ImGui::Header(this->m_path.string().c_str(), true);
-    ImGui::Header("Berkeley Packet Filter", true);
+    ImGuiExt::Header(this->m_path.string().c_str(), true);
+    ImGuiExt::Header("Berkeley Packet Filter", true);
     static char bpf_str[256];
     static bool valid_filter;
     if (ImGui::InputText("##BPF", bpf_str, IM_ARRAYSIZE(bpf_str), ImGuiInputTextFlags_EnterReturnsTrue)) {
@@ -65,7 +65,7 @@ void PcapProvider::drawInterface() {
     ImGui::PushItemFlag(ImGuiItemFlags_NoTabStop, true);
     ImGui::ColorButton("##Valid", valid_filter?ImVec4(0,0.5f,0,1):ImVec4(0.5f,0,0,01), ImGuiColorEditFlags_NoTooltip);
     ImGui::PopItemFlag();
-    ImGui::Header("Packets", true);
+    ImGuiExt::Header("Packets", true);
     if (ImGui::BeginListBox("##Packets", ImVec2(-FLT_MIN, -(ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y)))) {
 
         u_int idx = 0;
