@@ -34,7 +34,7 @@ jobs:
       with:
         key: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build-${{ github.run_id }}
         restore-keys: ${{ runner.os }}-${{ secrets.CACHE_VERSION }}-build
-        max-size: 50M
+        max-size: 1G
 
     - name: 📜 Restore CMakeCache
       uses:  actions/cache@v3
@@ -93,8 +93,17 @@ jobs:
 
   # MacOS build
   macos:
-    runs-on: macos-11
-    name: 🍎 macOS 11.0
+    runs-on: macos-12
+    name: 🍎 macOS 12.0
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suffix: "-NoGPU"
+            custom_glfw: true
+          - suffix: ""
+            custom_glfw: false
 
     steps:
     - name: 🧰 Checkout
@@ -156,6 +165,90 @@ jobs:
         name: macOS Plugin
         path: |
           build/imhex.app/Contents/MacOS/plugins/pcaps.hexplug
+
+  macos-arm64-build:
+    runs-on: ubuntu-22.04
+    name: 🍎 macOS 12.1 arm64
+    outputs:
+      IMHEX_VERSION: ${{ steps.build.outputs.IMHEX_VERSION }}
+    steps:
+    - name: 🧰 Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    
+    - name: 📁 Restore docker /cache
+      uses: actions/cache@v3
+      with:
+        path: cache
+        key: build-macos-arm64-cache
+
+    - name: 🐳 Inject /cache into docker
+      uses: reproducible-containers/buildkit-cache-dance@v2.1.2 # Doesn't work with a MacOS runner ?
+      with:
+        cache-source: cache
+        cache-target: /cache
+
+    - name: 🛠️ Build using docker
+      id: build
+      run: |
+        echo "IMHEX_VERSION=`cat VERSION`" >> $GITHUB_OUTPUT
+        docker buildx build . -f dist/macOS/arm64.Dockerfile --progress=plain --build-arg 'JOBS=4' --build-arg "BUILD_TYPE=$(BUILD_TYPE)" --build-context imhex=$(pwd) --output out
+
+    - name: ⬆️ Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos_arm64_intermediate
+        path: out/
+
+      # See https://github.com/actions/cache/issues/342#issuecomment-1711054115
+    - name: 🗑️ Delete old cache
+      continue-on-error: true
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+          gh extension install actions/gh-actions-cache
+          gh actions-cache delete "build-macos-arm64-cache" --confirm || true
+
+  macos-arm64-package:
+    runs-on: macos-12
+    name: 🍎 macOS 12.1 arm64 Packaging
+    needs: macos-arm64-build
+    env:
+      IMHEX_VERSION: ${{ needs.macos-arm64-build.outputs.IMHEX_VERSION }}
+    steps:
+      - name: ⬇️ Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos_arm64_intermediate
+          path: out
+
+      - name: 🗑️ Delete artifact
+        uses: geekyeggo/delete-artifact@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: macos_arm64_intermediate
+
+      - name: ✒️ Fix Signature
+        run: |
+          set -x
+          cd out
+          codesign --remove-signature ImHex.app
+          codesign --force --deep --sign - ImHex.app
+
+      - name: 📁 Fix permissions
+        run: |
+          set -x
+          cd out
+          chmod -R 755 ImHex.app/
+
+      - name: ⬆️ Upload macOS ARM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macOS Plugin
+          path: |
+            out/imhex.app/Contents/MacOS/plugins/pcaps.hexplug
+  
 
   # Ubuntu build
   ubuntu:
