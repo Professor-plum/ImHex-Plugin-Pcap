@@ -54,7 +54,7 @@ jobs:
         uses: WerWolv/imhex-download-sdk@v1.33.2
       - name: ⬇️ Install dependencies
         run: |
-          brew libpcap 
+          brew install libpcap 
       - name: Build
         run: |
           mkdir build
