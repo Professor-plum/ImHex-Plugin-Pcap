@@ -15,7 +15,13 @@ jobs:
           submodules: recursive
       - name: Install SDK
         id: install_sdk
-        uses: WerWolv/imhex-download-sdk@v1.32.2
+        uses: WerWolv/imhex-download-sdk@v1.33.2
+      - name: 🟦 Install msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: mingw64
+          pacboy: >-
+            libpcap:p
       - name: Build
         run: |
           mkdir build
@@ -45,7 +51,10 @@ jobs:
           submodules: recursive
       - name: Install SDK
         id: install_sdk
-        uses: WerWolv/imhex-download-sdk@v1.32.2
+        uses: WerWolv/imhex-download-sdk@v1.33.2
+      - name: ⬇️ Install dependencies
+        run: |
+          brew libpcap 
       - name: Build
         run: |
           mkdir build
