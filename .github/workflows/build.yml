@@ -33,6 +33,9 @@ jobs:
             ..
           cmake --build .
           cmake --install .
+          cp /mingw64/bin/libpcap.dll install
+          cp /mingw64/bin/libcrypto-3-x64.dll install
+          cp /mingw64/bin/libssl-3-x64.dll install
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
