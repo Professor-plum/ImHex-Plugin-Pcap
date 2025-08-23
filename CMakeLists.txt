@@ -48,6 +48,9 @@ elseif (NOT EXISTS $ENV{IMHEX_SDK_PATH})
 endif()
 add_subdirectory($ENV{IMHEX_SDK_PATH} ImHexSDK)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PCAP REQUIRED libpcap)
+
 # Register the plugin
 # This will configure everything you need to make your plugin work
 # Modify the arguments to your needs. Right now it defines a plugin called `example_plugin`
@@ -61,7 +64,8 @@ add_imhex_plugin(
         source/plugin_pcap.cpp
     INCLUDES
         include
+        ${PCAP_INCLUDE_DIRS}
 
     LIBRARIES
-        pcap
+        ${PCAP_LIBRARIES}
 )

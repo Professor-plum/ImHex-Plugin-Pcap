@@ -5,6 +5,7 @@
 #include <hex/plugin.hpp>
 #include <hex/providers/provider.hpp>
 #include <hex/api/content_registry.hpp>
+#include <wolv/utils/core.hpp>
 #include <pcap.h>
 #include <map>
 
@@ -58,7 +59,7 @@ struct tcp_hdr {
 #else
     u_char th_x2:4;                /* (unused) */
     u_char th_off:4;                /* data offset */
-#  endif
+#endif
 	u_short th_win;		/* window */
 	u_short th_sum;		/* checksum */
 	u_short th_urp;		/* urgent pointer */
@@ -76,7 +77,9 @@ struct udp_hdr {
 
 class PcapProvider : public hex::prv::Provider {
 public:
-    PcapProvider() : hex::prv::Provider() {};
+    inline PcapProvider() : hex::prv::Provider() {
+        hex::log::info("PcapProvider Constructor");
+    };
     ~PcapProvider() override = default;
 
     [[nodiscard]] bool isAvailable() const override {return true;}
@@ -86,7 +89,7 @@ public:
     [[nodiscard]] bool isSavable() const override {return false;}
 
     void readRaw(u64 offset, void *buffer, size_t size) override;
-    void writeRaw(u64 offset, const void *buffer, size_t size) override { hex::unused(offset, buffer, size);}
+    void writeRaw(u64 offset, const void *buffer, size_t size) override { wolv::util::unused(offset, buffer, size);}
     [[nodiscard]] u64 getActualSize() const override {return this->m_data.size();}
 
     [[nodiscard]] std::string getName() const override;
@@ -100,10 +103,10 @@ public:
 
     std::pair<hex::Region, bool> getRegionValidity(u64 address) const override;
 
-    void loadSettings(const nlohmann::json &settings) override { hex::unused(settings);}
+    void loadSettings(const nlohmann::json &settings) override { wolv::util::unused(settings);}
     [[nodiscard]] nlohmann::json storeSettings(nlohmann::json settings) const override { return settings; }
 
-    [[nodiscard]] std::string getTypeName() const override {return "Pcap Provider"; }
+    [[nodiscard]] hex::UnlocalizedString getTypeName() const override {return "Pcap Provider"; }
 
     [[nodiscard]] virtual bool hasInterface() const override {return true;};
     void drawInterface() override;
