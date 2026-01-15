@@ -48,26 +48,56 @@ std::pair<hex::Region, bool> PcapProvider::getRegionValidity(u64 address) const 
 
 void PcapProvider::drawInterface() {
     ImGuiExt::Header(this->m_path.string().c_str(), true);
+    
+    // Berkeley Packet Filter section
     ImGuiExt::Header("Berkeley Packet Filter", true);
     static char bpf_str[256];
-    static bool valid_filter;
-    if (ImGui::InputText("##BPF", bpf_str, IM_ARRAYSIZE(bpf_str), ImGuiInputTextFlags_EnterReturnsTrue)) {
+    static bool valid_filter = true;
+    static std::string last_validated_filter;
+    static float validation_timer = 0.0f;
+    static const float VALIDATION_DELAY = 0.5f; // Wait 500ms after last keystroke
+    
+    bool filter_changed = false;
+    if (ImGui::InputText("BPF Filter", bpf_str, IM_ARRAYSIZE(bpf_str), ImGuiInputTextFlags_EnterReturnsTrue)) {
         if (valid_filter) {
             this->m_bpf = bpf_str;
             hex::log::warn("bpf reopen");
             this->open();
         }
+        filter_changed = true;
     } 
+    
+    // Debounced validation - only validate after user stops typing
     if (ImGui::IsItemEdited()) {
-        valid_filter = isBpfValid(bpf_str);
-    } 
+        filter_changed = true;
+        validation_timer = VALIDATION_DELAY;
+    }
+    
+    // Update timer and validate when timer expires
+    if (validation_timer > 0.0f) {
+        validation_timer -= ImGui::GetIO().DeltaTime;
+        if (validation_timer <= 0.0f) {
+            std::string current_filter(bpf_str);
+            if (current_filter != last_validated_filter) {
+                valid_filter = isBpfValid(bpf_str);
+                last_validated_filter = current_filter;
+            }
+        }
+    }
+    
     ImGui::SameLine();
     ImGui::PushItemFlag(ImGuiItemFlags_NoTabStop, true);
-    ImGui::ColorButton("##Valid", valid_filter?ImVec4(0,0.5f,0,1):ImVec4(0.5f,0,0,01), ImGuiColorEditFlags_NoTooltip);
+    // Show different colors: green=valid, red=invalid, yellow=validating
+    ImVec4 color = valid_filter ? ImVec4(0,0.5f,0,1) : ImVec4(0.5f,0,0,1);
+    if (validation_timer > 0.0f) color = ImVec4(0.5f,0.5f,0,1); // Yellow while waiting
+    ImGui::ColorButton("##Valid", color, ImGuiColorEditFlags_NoTooltip);
     ImGui::PopItemFlag();
+    // Packets section
     ImGuiExt::Header("Packets", true);
-    if (ImGui::BeginListBox("##Packets", ImVec2(-FLT_MIN, -(ImGui::GetFrameHeight() + ImGui::GetStyle().ItemSpacing.y)))) {
-
+    
+    // Make the packet list resizable
+    static float packet_list_height = 300.0f;
+    if (ImGui::BeginChild("PacketList", ImVec2(0, packet_list_height), true, ImGuiWindowFlags_HorizontalScrollbar)) {
         u_int idx = 0;
         bool updated = false;
         for( std::map<u_int, std::string>::iterator iter = m_packet_descs.begin(); iter != m_packet_descs.end(); ++iter )
@@ -88,38 +118,78 @@ void PcapProvider::drawInterface() {
             }
             idx++;
         }
-        ImGui::EndListBox();
         if (updated) {
             this->loadPackets();
         }
     }
+    ImGui::EndChild();
+    
+    // Resizer for packet list
+    ImGui::Button("##PacketListResizer", ImVec2(-1, 8));
+    if (ImGui::IsItemActive()) {
+        packet_list_height += ImGui::GetIO().MouseDelta.y;
+        if (packet_list_height < 100) packet_list_height = 100;
+        if (packet_list_height > 600) packet_list_height = 600;
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
+    }
+    
+    // Pagination controls
     int v_max = 1 + (m_packet_descs.size() / PCAP_PAGE_SIZE);
-    if (ImGui::ArrowButton("page_prevn", ImGuiDir_Left)) {
+    if (ImGui::ArrowButton("page_prev", ImGuiDir_Left)) {
         if (m_page>1) m_page--;
     }
     ImGui::SameLine();
-    if (ImGui::SliderInt("Page", &m_page, 1, v_max, "%d", ImGuiSliderFlags_AlwaysClamp)) {
-
-    }
+    ImGui::SetNextItemWidth(100);
+    ImGui::SliderInt("Page", &m_page, 1, v_max, "%d", ImGuiSliderFlags_AlwaysClamp);
     ImGui::SameLine();
     if (ImGui::ArrowButton("page_next", ImGuiDir_Right)) {
         if (m_page < v_max) m_page++;
     }
     
+    // Show selection info
+    ImGui::SameLine();
+    ImGui::Text("(%d packets selected)", (int)m_selected_packets.size());
 }
 
 bool PcapProvider::isBpfValid(char* bpf) {
-    pcap_t *fp;
+    // Quick validation for empty or common invalid cases
+    if (!bpf || strlen(bpf) == 0) {
+        return true; // Empty filter is valid
+    }
+    
+    // Cache the pcap handle to avoid repeated allocation
+    static pcap_t *cached_fp = nullptr;
+    static std::string last_valid_filter;
+    static bool last_result = true;
+    
+    // Check cache first
+    std::string current_filter(bpf);
+    if (current_filter == last_valid_filter) {
+        return last_result;
+    }
+    
+    // Initialize cached handle if needed
+    if (!cached_fp) {
+        cached_fp = pcap_open_dead(DLT_EN10MB, 65535);
+        if (!cached_fp) {
+            return false;
+        }
+    }
+    
+    // Validate the filter
     struct bpf_program filter;
     bool ret = false;
-    fp = pcap_open_dead(DLT_EN10MB, 65535);
-    if (fp) {
-        if (pcap_compile(fp, &filter, bpf, 0, PCAP_NETMASK_UNKNOWN) == 0) {
-            ret = true;
-            pcap_freecode(&filter);
-        }
-        pcap_close(fp);
+    if (pcap_compile(cached_fp, &filter, bpf, 0, PCAP_NETMASK_UNKNOWN) == 0) {
+        ret = true;
+        pcap_freecode(&filter);
     }
+    
+    // Update cache
+    last_valid_filter = current_filter;
+    last_result = ret;
+    
     return ret;
 }
 
